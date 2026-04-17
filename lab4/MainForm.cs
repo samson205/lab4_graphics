@@ -28,6 +28,9 @@ namespace lab4
 
             DrawBorder();
             pictureBox.Invalidate();
+
+            btnMoveLeft.Click += btnMoveLeft_Click;
+            btnMoveRight.Click += btnSheerX_Click;
         }
 
         private void btnLoad_Click(object? sender, EventArgs? e)
@@ -46,6 +49,42 @@ namespace lab4
         private void btnLight_Click(object? sender, EventArgs? e)
         {
             isLight = !isLight;
+            FillFigure(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void btnMoveLeft_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Move(peaks, -10, 0);
+
+            FillFigure(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void btnMoveRight_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Move(peaks, 10, 0);
+
+            FillFigure(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void btnRotateRight_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Rotate(peaks, 10);
+
+            FillFigure(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void btnSheerX_Click(object? sender, EventArgs? e)
+        {
+            Transforms.ShearX(peaks, 2);
+
             FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
@@ -77,10 +116,10 @@ namespace lab4
                 Peak p2 = peaks[2];
                 Peak p3 = peaks[3];
 
-                g.DrawLine(pen, new Point(p0.X, p0.Y), new Point(p1.X, p1.Y));
-                g.DrawLine(pen, new Point(p1.X, p1.Y), new Point(p2.X, p2.Y));
-                g.DrawLine(pen, new Point(p2.X, p2.Y), new Point(p3.X, p3.Y));
-                g.DrawLine(pen, new Point(p0.X, p0.Y), new Point(p3.X, p3.Y));
+                g.DrawLine(pen, new PointF(p0.X, p0.Y), new PointF(p1.X, p1.Y));
+                g.DrawLine(pen, new PointF(p1.X, p1.Y), new PointF(p2.X, p2.Y));
+                g.DrawLine(pen, new PointF(p2.X, p2.Y), new PointF(p3.X, p3.Y));
+                g.DrawLine(pen, new PointF(p0.X, p0.Y), new PointF(p3.X, p3.Y));
             }
         }
 
@@ -103,10 +142,10 @@ namespace lab4
             Marshal.Copy(mainData.Scan0, mainPixels, 0, mainCount);
             Marshal.Copy(textureData.Scan0, texturePixels, 0, textureCount);
 
-            int minX = peaks.Min(p => p.X);
-            int maxX = peaks.Max(p => p.X);
-            int minY = peaks.Min(p => p.Y);
-            int maxY = peaks.Max(p => p.Y);
+            int minX = (int)Math.Floor(peaks.Min(p => p.X));
+            int maxX = (int)Math.Ceiling(peaks.Max(p => p.X));
+            int minY = (int)Math.Floor(peaks.Min(p => p.Y));
+            int maxY = (int)Math.Ceiling(peaks.Max(p => p.Y));
             for (int y = minY; y <= maxY; y++)
             {
                 if (y < 0 || y >= mH) continue;
@@ -133,8 +172,8 @@ namespace lab4
                             localBr = w1 * peaks[0].Br + w2 * peaks[3].Br + w3 * peaks[2].Br;
                     }
 
-                    int textureX = (int)(u * (tW - 1));
-                    int textureY = (int)(v * (tH - 1));
+                    int textureX = Math.Clamp((int)(u * (tW - 1)), 0, tW - 1);
+                    int textureY = Math.Clamp((int)(v * (tH - 1)), 0, tH - 1);
                     int textureInd = textureY * textureData.Stride + textureX * 4;
                     int mainInd = y * mainData.Stride + x * 4;
 
@@ -156,10 +195,10 @@ namespace lab4
 
         private int IsPointInTriangle(Point p, out float w1, out float w2, out float w3)
         {
-            Point a = new Point(peaks[0].X, peaks[0].Y);
-            Point b = new Point(peaks[1].X, peaks[1].Y);
-            Point c = new Point(peaks[2].X, peaks[2].Y);
-            Point d = new Point(peaks[3].X, peaks[3].Y);
+            PointF a = new PointF(peaks[0].X, peaks[0].Y);
+            PointF b = new PointF(peaks[1].X, peaks[1].Y);
+            PointF c = new PointF(peaks[2].X, peaks[2].Y);
+            PointF d = new PointF(peaks[3].X, peaks[3].Y);
 
             // 2S = (x1 - x3)(y2 - y3) - (x2 - x3)(y1 - y3)
             // ABC
@@ -171,7 +210,7 @@ namespace lab4
             // ABP
             w3 = 1.0f - w1 - w2;
 
-            bool isIn = w1 >= 0 && w2 >= 0 && w3 >= 0;
+            bool isIn = w1 >= -0.001f && w2 >= -0.001f && w3 >= -0.001f;
             if (isIn) return 1;
 
             // ADC
@@ -183,20 +222,20 @@ namespace lab4
             // ADP
             w3 = 1.0f - w1 - w2;
 
-            isIn = w1 >= 0 && w2 >= 0 && w3 >= 0;
+            isIn = w1 >= -0.001f && w2 >= -0.001f && w3 >= -0.001f;
             if (isIn) return 2;
 
             return 0;
         }
     }
 
-    public struct Peak
+    public class Peak
     {
-        public int X;
-        public int Y;
-        public float U;
-        public float V;
-        public float Br;
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float U { get; set; }
+        public float V { get; set; }
+        public float Br { get; set; }
 
         public Peak(int x, int y, float u, float v, float br)
         {
