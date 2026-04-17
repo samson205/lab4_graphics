@@ -84,7 +84,7 @@ namespace lab4
             }
         }
 
-        private void FillTriangle(bool localBrightness = false)
+        private void FillTriangle(bool localBrightness)
         {
             int mW = mainBmp.Width, mH = mainBmp.Height;
             int tW = textureBmp.Width , tH = textureBmp.Height;
@@ -99,6 +99,7 @@ namespace lab4
             int textureCount = textureData.Stride * tH;
             byte[] texturePixels = new byte[textureCount];
 
+            Array.Clear(mainPixels, 0, mainPixels.Length);
             Marshal.Copy(mainData.Scan0, mainPixels, 0, mainCount);
             Marshal.Copy(textureData.Scan0, texturePixels, 0, textureCount);
 
@@ -137,9 +138,9 @@ namespace lab4
                     int textureInd = textureY * textureData.Stride + textureX * 4;
                     int mainInd = y * mainData.Stride + x * 4;
 
-                    float b = (texturePixels[textureInd] - 128) * contrast + 128;
-                    float g = (texturePixels[textureInd + 1] - 128) * contrast + 128;
-                    float r = (texturePixels[textureInd + 2] - 128) * contrast + 128;
+                    float b = ((float)texturePixels[textureInd] - 128f) * contrast + 128f;
+                    float g = ((float)texturePixels[textureInd + 1] - 128f) * contrast + 128f;
+                    float r = ((float)texturePixels[textureInd + 2] - 128f) * contrast + 128f;
 
                     float br = localBr * globalBr;
                     mainPixels[mainInd] = (byte)Math.Clamp(b * br, 0, 255);
