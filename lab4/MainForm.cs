@@ -37,7 +37,7 @@ namespace lab4
                 ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
                 if (ofd.ShowDialog() == DialogResult.OK)
                     textureBmp = new Bitmap(ofd.FileName);
-                    FillTriangle(isLight);
+                    FillFigure(isLight);
                     DrawBorder();
                     pictureBox.Invalidate();
             }
@@ -46,7 +46,7 @@ namespace lab4
         private void btnLight_Click(object? sender, EventArgs? e)
         {
             isLight = !isLight;
-            FillTriangle(isLight);
+            FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
         }
@@ -54,7 +54,7 @@ namespace lab4
         private void trackGlobalBrightness_Scroll(object? sender, EventArgs e)
         {
             globalBr = trackGlobalBrightness.Value / 100.0f;
-            FillTriangle(isLight);
+            FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
         }
@@ -62,7 +62,7 @@ namespace lab4
         private void trackContrast_Scroll(object? sender, EventArgs e)
         {
             contrast = trackContrast.Value / 100.0f;
-            FillTriangle(isLight);
+            FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
         }
@@ -84,7 +84,7 @@ namespace lab4
             }
         }
 
-        private void FillTriangle(bool localBrightness)
+        private void FillFigure(bool localBrightness)
         {
             int mW = mainBmp.Width, mH = mainBmp.Height;
             int tW = textureBmp.Width , tH = textureBmp.Height;
