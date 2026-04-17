@@ -1,12 +1,17 @@
-using System.Configuration;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace lab4
 {
     public partial class MainForm : Form
     {
         Bitmap mainBmp;
-        Bitmap imgBmp;
+        Bitmap textureBmp;
         List<Peak> peaks = new List<Peak>();
+
+        float globalBr = 1.0f, contrast = 1.0f;
+
+        bool isLight = false;
 
         public MainForm()
         {
@@ -16,10 +21,10 @@ namespace lab4
             int cx = pictureBox.Width / 2;
             int cy = pictureBox.Height / 2;
 
-            peaks.Add(new Peak(cx - 250, cy + 250, 0, 1)); // A
-            peaks.Add(new Peak(cx - 250, cy - 250, 0, 0)); // B
-            peaks.Add(new Peak(cx + 250, cy - 250, 1, 0)); // C
-            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1)); // D
+            peaks.Add(new Peak(cx - 250, cy + 250, 0, 1, 1.7f)); // A
+            peaks.Add(new Peak(cx - 250, cy - 250, 0, 0, 1.9f)); // B
+            peaks.Add(new Peak(cx + 250, cy - 250, 1, 0, 1.3f)); // C
+            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.4f)); // D
 
             DrawBorder();
             pictureBox.Invalidate();
@@ -31,11 +36,35 @@ namespace lab4
             {
                 ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
                 if (ofd.ShowDialog() == DialogResult.OK)
-                    imgBmp = new Bitmap(ofd.FileName);
-                    FillTriangle();
+                    textureBmp = new Bitmap(ofd.FileName);
+                    FillTriangle(isLight);
                     DrawBorder();
                     pictureBox.Invalidate();
             }
+        }
+
+        private void btnLight_Click(object? sender, EventArgs? e)
+        {
+            isLight = !isLight;
+            FillTriangle(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void trackGlobalBrightness_Scroll(object? sender, EventArgs e)
+        {
+            globalBr = trackGlobalBrightness.Value / 100.0f;
+            FillTriangle(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void trackContrast_Scroll(object? sender, EventArgs e)
+        {
+            contrast = trackContrast.Value / 100.0f;
+            FillTriangle(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
         }
 
         private void DrawBorder()
@@ -55,36 +84,73 @@ namespace lab4
             }
         }
 
-        private void FillTriangle()
+        private void FillTriangle(bool localBrightness = false)
         {
+            int mW = mainBmp.Width, mH = mainBmp.Height;
+            int tW = textureBmp.Width , tH = textureBmp.Height;
+
+            BitmapData mainData = mainBmp.LockBits(new Rectangle(0, 0, mW, mH),
+                ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
+            BitmapData textureData = textureBmp.LockBits(new Rectangle(0, 0, tW, tH),
+                ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
+
+            int mainCount = mainData.Stride * mH;
+            byte[] mainPixels = new byte[mainCount];
+            int textureCount = textureData.Stride * tH;
+            byte[] texturePixels = new byte[textureCount];
+
+            Marshal.Copy(mainData.Scan0, mainPixels, 0, mainCount);
+            Marshal.Copy(textureData.Scan0, texturePixels, 0, textureCount);
+
             int minX = peaks.Min(p => p.X);
             int maxX = peaks.Max(p => p.X);
-
             int minY = peaks.Min(p => p.Y);
             int maxY = peaks.Max(p => p.Y);
             for (int y = minY; y <= maxY; y++)
             {
+                if (y < 0 || y >= mH) continue;
                 for (int x = minX; x <= maxX; x++)
                 {
+                    if (x < 0 || x >= mW) continue;
                     Point p = new Point(x, y);
                     int isPointIn = IsPointInTriangle(p, out float w1, out float w2, out float w3);
-                    if (isPointIn != 0)
-                    {
-                        float u = w1 * peaks[0].U + w2 * peaks[1].U + w3 * peaks[2].U;
-                        float v = w1 * peaks[0].V + w2 * peaks[1].V + w3 * peaks[2].V;
-                        if (isPointIn == 2)
-                        {
-                            u = w1 * peaks[0].U + w2 * peaks[3].U + w3 * peaks[2].U;
-                            v = w1 * peaks[0].V + w2 * peaks[3].V + w3 * peaks[2].V;
-                        }
 
-                        int textureX = (int)(u * (imgBmp.Width - 1));
-                        int textureY = (int)(v * (imgBmp.Height - 1));
-                        Color textureColor = imgBmp.GetPixel(textureX, textureY);
-                        mainBmp.SetPixel(x, y, textureColor);
+                    float u, v, localBr = 1;
+                    if (isPointIn == 0) continue;
+                    else if (isPointIn == 1)
+                    {
+                        u = w1 * peaks[0].U + w2 * peaks[1].U + w3 * peaks[2].U;
+                        v = w1 * peaks[0].V + w2 * peaks[1].V + w3 * peaks[2].V;
+                        if (localBrightness)
+                            localBr = w1 * peaks[0].Br + w2 * peaks[1].Br + w3 * peaks[2].Br;
                     }
+                    else
+                    {
+                        u = w1 * peaks[0].U + w2 * peaks[3].U + w3 * peaks[2].U;
+                        v = w1 * peaks[0].V + w2 * peaks[3].V + w3 * peaks[2].V;
+                        if (localBrightness)
+                            localBr = w1 * peaks[0].Br + w2 * peaks[3].Br + w3 * peaks[2].Br;
+                    }
+
+                    int textureX = (int)(u * (tW - 1));
+                    int textureY = (int)(v * (tH - 1));
+                    int textureInd = textureY * textureData.Stride + textureX * 4;
+                    int mainInd = y * mainData.Stride + x * 4;
+
+                    float b = (texturePixels[textureInd] - 128) * contrast + 128;
+                    float g = (texturePixels[textureInd + 1] - 128) * contrast + 128;
+                    float r = (texturePixels[textureInd + 2] - 128) * contrast + 128;
+
+                    float br = localBr * globalBr;
+                    mainPixels[mainInd] = (byte)Math.Clamp(b * br, 0, 255);
+                    mainPixels[mainInd + 1] = (byte)Math.Clamp(g * br, 0, 255);
+                    mainPixels[mainInd + 2] = (byte)Math.Clamp(r * br, 0, 255);
+                    mainPixels[mainInd + 3] = 255;
                 }
             }
+            Marshal.Copy(mainPixels, 0, mainData.Scan0, mainCount);
+            mainBmp.UnlockBits(mainData);
+            textureBmp.UnlockBits(textureData);
         }
 
         private int IsPointInTriangle(Point p, out float w1, out float w2, out float w3)
@@ -129,13 +195,15 @@ namespace lab4
         public int Y;
         public float U;
         public float V;
+        public float Br;
 
-        public Peak(int x, int y, float u, float v)
+        public Peak(int x, int y, float u, float v, float br)
         {
             X = x;
             Y = y;
             U = u;
             V = v;
+            Br = br;
         }
     }
 }
