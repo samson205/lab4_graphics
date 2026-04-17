@@ -33,6 +33,8 @@
             trackGlobalBrightness = new TrackBar();
             btnLight = new Button();
             trackContrast = new TrackBar();
+            btnMoveRight = new Button();
+            btnMoveLeft = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackGlobalBrightness).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackContrast).BeginInit();
@@ -74,7 +76,7 @@
             // 
             // btnLight
             // 
-            btnLight.Location = new Point(454, 628);
+            btnLight.Location = new Point(529, 628);
             btnLight.Name = "btnLight";
             btnLight.Size = new Size(100, 38);
             btnLight.TabIndex = 4;
@@ -84,7 +86,7 @@
             // 
             // trackContrast
             // 
-            trackContrast.Location = new Point(35, 626);
+            trackContrast.Location = new Point(12, 626);
             trackContrast.Maximum = 200;
             trackContrast.Name = "trackContrast";
             trackContrast.Size = new Size(334, 45);
@@ -94,12 +96,32 @@
             trackContrast.Value = 100;
             trackContrast.Scroll += trackContrast_Scroll;
             // 
+            // btnMoveRight
+            // 
+            btnMoveRight.Location = new Point(478, 628);
+            btnMoveRight.Name = "btnMoveRight";
+            btnMoveRight.Size = new Size(45, 38);
+            btnMoveRight.TabIndex = 6;
+            btnMoveRight.Text = "->";
+            btnMoveRight.UseVisualStyleBackColor = true;
+            // 
+            // btnMoveLeft
+            // 
+            btnMoveLeft.Location = new Point(427, 628);
+            btnMoveLeft.Name = "btnMoveLeft";
+            btnMoveLeft.Size = new Size(45, 38);
+            btnMoveLeft.TabIndex = 7;
+            btnMoveLeft.Text = "<-";
+            btnMoveLeft.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlLight;
             ClientSize = new Size(1124, 680);
+            Controls.Add(btnMoveLeft);
+            Controls.Add(btnMoveRight);
             Controls.Add(trackContrast);
             Controls.Add(btnLight);
             Controls.Add(trackGlobalBrightness);
@@ -125,5 +147,7 @@
         private TrackBar trackGlobalBrightness;
         private Button btnLight;
         private TrackBar trackContrast;
+        private Button btnMoveRight;
+        private Button btnMoveLeft;
     }
 }
