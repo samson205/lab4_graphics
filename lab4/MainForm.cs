@@ -1,3 +1,5 @@
+using System.Configuration;
+
 namespace lab4
 {
     public partial class MainForm : Form
@@ -11,11 +13,13 @@ namespace lab4
             InitializeComponent();
             mainBmp = new Bitmap(pictureBox.Width, pictureBox.Height);
             pictureBox.Image = mainBmp;
+            int cx = pictureBox.Width / 2;
+            int cy = pictureBox.Height / 2;
 
-            peaks.Add(new Peak(50, 300, 0, 1)); // A
-            peaks.Add(new Peak(50, 50, 0, 0)); // B
-            peaks.Add(new Peak(300, 50, 1, 0)); // C
-            peaks.Add(new Peak(300, 300, 1, 1)); // D
+            peaks.Add(new Peak(cx - 250, cy + 250, 0, 1)); // A
+            peaks.Add(new Peak(cx - 250, cy - 250, 0, 0)); // B
+            peaks.Add(new Peak(cx + 250, cy - 250, 1, 0)); // C
+            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1)); // D
 
             DrawBorder();
             pictureBox.Invalidate();
