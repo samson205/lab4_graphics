@@ -8,7 +8,6 @@ namespace lab4
         Bitmap mainBmp;
         Bitmap textureBmp;
         List<Peak> peaks = new List<Peak>();
-        Transforms transforms;
 
         float globalBr = 1.0f, contrast = 1.0f;
 
@@ -26,13 +25,12 @@ namespace lab4
             peaks.Add(new Peak(cx - 250, cy - 250, 0, 0, 1.9f)); // B
             peaks.Add(new Peak(cx + 250, cy - 250, 1, 0, 1.3f)); // C
             peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.4f)); // D
-            transforms = new Transforms(peaks);
 
             DrawBorder();
             pictureBox.Invalidate();
 
             btnMoveLeft.Click += btnMoveLeft_Click;
-            btnMoveRight.Click += btnRotateRight_Click;
+            btnMoveRight.Click += btnSheerX_Click;
         }
 
         private void btnLoad_Click(object? sender, EventArgs? e)
@@ -58,12 +56,8 @@ namespace lab4
 
         private void btnMoveLeft_Click(object? sender, EventArgs? e)
         {
-            transforms.SetVertices(peaks);
-            List<PointF> newPeaks = transforms.Move(-10, 0);
-            for (int i = 0; i < newPeaks.Count; i++)
-            {
-                peaks[i].X = newPeaks[i].X;
-            }
+            Transforms.Move(peaks, -10, 0);
+
             FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
@@ -71,12 +65,8 @@ namespace lab4
 
         private void btnMoveRight_Click(object? sender, EventArgs? e)
         {
-            transforms.SetVertices(peaks);
-            List<PointF> newPeaks = transforms.Move(10, 0);
-            for (int i = 0; i < newPeaks.Count; i++)
-            {
-                peaks[i].X = newPeaks[i].X;
-            }
+            Transforms.Move(peaks, 10, 0);
+
             FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
@@ -84,13 +74,17 @@ namespace lab4
 
         private void btnRotateRight_Click(object? sender, EventArgs? e)
         {
-            transforms.SetVertices(peaks);
-            List<PointF> newPeaks = transforms.Rotate(10);
-            for (int i = 0; i < newPeaks.Count; i++)
-            {
-                peaks[i].X = newPeaks[i].X;
-                peaks[i].Y = newPeaks[i].Y;
-            }
+            Transforms.Rotate(peaks, 10);
+
+            FillFigure(isLight);
+            DrawBorder();
+            pictureBox.Invalidate();
+        }
+
+        private void btnSheerX_Click(object? sender, EventArgs? e)
+        {
+            Transforms.ShearX(peaks, 2);
+
             FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();

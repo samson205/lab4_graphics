@@ -1,33 +1,8 @@
 ﻿namespace lab4
 {
-    internal class Transforms
+    internal static class Transforms
     {
-        private List<PointF> vertices = new List<PointF>();
-        public void SetVertices(IEnumerable<Peak> peaks)
-        {
-            if (peaks == null) return;
-
-            vertices = peaks
-                .Select(p => new PointF(p.X, p.Y))
-                .ToList();
-        }
-
-        public Transforms(List<Peak> peaks)
-        {
-            foreach (Peak peak in peaks)
-            {
-                vertices.Add(new PointF(peak.X, peak.Y));
-            }
-        }
-
-        private PointF GetCenter()
-        {
-            float cx = vertices.Average(p => p.X);
-            float cy = vertices.Average(p => p.Y);
-            return new PointF(cx, cy);
-        }
-
-        private float[,] MultiplyMatrix(float[,] a, float[,] b)
+        private static float[,] MultiplyMatrix(float[,] a, float[,] b)
         {
             float[,] result = new float[3, 3];
             for (int i = 0; i < 3; i++)
@@ -44,19 +19,19 @@
             return result;
         }
 
-        private List<PointF> ApplyMatrix(float[,] matrix)
+        private static void ApplyMatrix(List<Peak> peaks, float[,] matrix)
         {
             var result = new List<PointF>();
-            foreach (var p in vertices)
+            foreach (var p in peaks)
             {
                 float newX = p.X * matrix[0, 0] + p.Y * matrix[1, 0] + 1 * matrix[2, 0];
                 float newY = p.X * matrix[0, 1] + p.Y * matrix[1, 1] + 1 * matrix[2, 1];
-                result.Add(new PointF(newX, newY));
+                p.X = newX;
+                p.Y = newY;
             }
-            return result;
         }
 
-        private float[,] TranslationMatrix(float dx, float dy)
+        private static float[,] TranslationMatrix(float dx, float dy)
         {
             return new float[,]
             {
@@ -66,72 +41,79 @@
             };
         }
 
-        public List<PointF> Move(float dx, float dy)
+        public static void Move(List<Peak> peaks, float dx, float dy)
         {
             float[,] m = TranslationMatrix(dx, -dy);
-            return ApplyMatrix(m);
+            ApplyMatrix(peaks, m);
         }
 
-        public List<PointF> Scale(float sx, float sy)
+        public static void Scale(List<Peak> peaks, float sx, float sy)
         {
-            var center = GetCenter();
+            float cx = peaks.Average(p => p.X);
+            float cy = peaks.Average(p => p.Y);
 
-            float[,] toOrigin = TranslationMatrix(-center.X, -center.Y);
+            float[,] toOrigin = TranslationMatrix(-cx, -cy);
             float[,] scale = {
                 { sx, 0,  0 },
                 { 0,  sy, 0 },
                 { 0,  0,  1 }
             };
-            float[,] toCenter = TranslationMatrix(center.X, center.Y);
+            float[,] toCenter = TranslationMatrix(cx, cy);
 
             float[,] finalMatrix = MultiplyMatrix(MultiplyMatrix(toOrigin, scale), toCenter);
-            return ApplyMatrix(finalMatrix);
+            ApplyMatrix(peaks, finalMatrix);
         }
 
-        public List<PointF> Rotate(float angleDegrees)
+        public static void Rotate(List<Peak> peaks, float angleDegrees)
         {
-            var center = GetCenter();
+            float cx = peaks.Average(p => p.X);
+            float cy = peaks.Average(p => p.Y);
+
             double angleRadians = angleDegrees * Math.PI / 180.0;
             float cosA = (float)Math.Cos(angleRadians);
             float sinA = (float)Math.Sin(angleRadians);
 
-            float[,] toOrigin = TranslationMatrix(-center.X, -center.Y);
+            float[,] toOrigin = TranslationMatrix(-cx, -cy);
 
             float[,] rotate = {
                 {  cosA, -sinA, 0 },
                 {  sinA,  cosA, 0 },
                 {  0,     0,    1 }
             };
-            float[,] toCenter = TranslationMatrix(center.X, center.Y);
+            float[,] toCenter = TranslationMatrix(cx, cy);
 
             float[,] finalMatrix = MultiplyMatrix(MultiplyMatrix(toOrigin, rotate), toCenter);
-            return ApplyMatrix(finalMatrix);
+            ApplyMatrix(peaks, finalMatrix);
         }
 
-        public List<PointF> ShearX(float shx)
+        public static void ShearX(List<Peak> peaks, float shx)
         {
-            var center = GetCenter();
-            float[,] toOrigin = TranslationMatrix(-center.X, -center.Y);
+            float cx = peaks.Average(p => p.X);
+            float cy = peaks.Average(p => p.Y);
+
+            float[,] toOrigin = TranslationMatrix(-cx, -cy);
             float[,] shear = {
                 { 1,   0, 0 },
                 { shx, 1, 0 },
                 { 0,   0, 1 }
             };
-            float[,] toCenter = TranslationMatrix(center.X, center.Y);
-            return ApplyMatrix(MultiplyMatrix(MultiplyMatrix(toOrigin, shear), toCenter));
+            float[,] toCenter = TranslationMatrix(cx, cy);
+            ApplyMatrix(peaks, MultiplyMatrix(MultiplyMatrix(toOrigin, shear), toCenter));
         }
 
-        public List<PointF> ShearY(float shy)
+        public static void ShearY(List<Peak> peaks, float shy)
         {
-            var center = GetCenter();
-            float[,] toOrigin = TranslationMatrix(-center.X, -center.Y);
+            float cx = peaks.Average(p => p.X);
+            float cy = peaks.Average(p => p.Y);
+
+            float[,] toOrigin = TranslationMatrix(-cx, -cy);
             float[,] shear = {
                 { 1, -shy, 0 },
                 { 0, 1,    0 },
                 { 0, 0,    1 }
             };
-            float[,] toCenter = TranslationMatrix(center.X, center.Y);
-            return ApplyMatrix(MultiplyMatrix(MultiplyMatrix(toOrigin, shear), toCenter));
+            float[,] toCenter = TranslationMatrix(cx, cy);
+            ApplyMatrix(peaks, MultiplyMatrix(MultiplyMatrix(toOrigin, shear), toCenter));
         }
     }
 }
