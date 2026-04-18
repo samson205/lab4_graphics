@@ -2,45 +2,46 @@ namespace lab4
 {
     public partial class MainForm : Form
     {
+        const float ScalePlus = 1.05f, ScaleMinus = 0.95f;
+        const int RotateAngle = 5;
+
+        private (NumericUpDown U, NumericUpDown V)[] uvNums;
+
         Bitmap mainBmp;
         Bitmap textureBmp;
         List<Peak> peaks = new List<Peak>();
 
-        float globalBr = 1.0f, contrast = 1.0f, sat = 1.0f;
+        float globalBr = 1.0f, contrast = 1.0f, saturation = 1.0f;
         Point lastPos;
         bool isLight = false;
         bool isDraggin = false;
-        int draggedInd = -1;
+        int draggedPeakInd = -1;
 
         public MainForm()
         {
             InitializeComponent();
+            uvNums = new (NumericUpDown, NumericUpDown)[]
+            {
+                (numU1, numV1),
+                (numU2, numV2),
+                (numU3, numV3),
+                (numU4, numV4)
+            };
+
             mainBmp = new Bitmap(pictureBox.Width, pictureBox.Height);
             pictureBox.Image = mainBmp;
-            int cx = pictureBox.Width / 2;
-            int cy = pictureBox.Height / 2;
-
-            peaks.Add(new Peak(cx - 250, cy + 250, 0, 1, 1.7f)); // A
-            peaks.Add(new Peak(cx - 250, cy - 250, 0, 0, 1.9f)); // B
-            peaks.Add(new Peak(cx + 250, cy - 250, 1, 0, 1.3f)); // C
-            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.4f)); // D
-
-            btnMoveRight.Click += btnSheerX_Click;
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
+            if (peaks.Count == 0) return;
             if (e.Button == MouseButtons.Left)
             {
                 for (int i = 0; i < peaks.Count; i++)
                 {
-                    float dx = e.X - peaks[i].X;
-                    float dy = e.Y - peaks[i].Y;
-                    float distance = (float)Math.Sqrt(dx * dx + dy * dy);
-
-                    if (distance <= 10f)
+                    if (GetDist(e.Location, peaks[i]) <= 10f)
                     {
-                        draggedInd = i;
+                        draggedPeakInd = i;
                         lastPos = e.Location;
                         return;
                     }
@@ -56,15 +57,14 @@ namespace lab4
 
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (draggedInd == -1 && !isDraggin)
+            if (peaks.Count == 0) return;
+            if (draggedPeakInd == -1 && !isDraggin)
             {
                 bool isOverPeak = false;
 
                 foreach (var peak in peaks)
                 {
-                    float dx = e.X - peak.X;
-                    float dy = e.Y - peak.Y;
-                    if (Math.Sqrt(dx * dx + dy * dy) <= 10f)
+                    if (GetDist(e.Location, peak) <= 10f)
                     {
                         isOverPeak = true;
                         break;
@@ -81,16 +81,16 @@ namespace lab4
                 return;
             }
 
-            float deltaX = e.X - lastPos.X;
-            float deltaY = e.Y - lastPos.Y;
-            if (draggedInd != - 1)
+            float dx = e.X - lastPos.X;
+            float dy = e.Y - lastPos.Y;
+            if (draggedPeakInd != - 1)
             {
-                peaks[draggedInd].X += deltaX;
-                peaks[draggedInd].Y += deltaY;
+                peaks[draggedPeakInd].X += dx;
+                peaks[draggedPeakInd].Y += dy;
             }
             else if (isDraggin)
             {
-                Transforms.Move(peaks, deltaX, -deltaY);
+                Transforms.Move(peaks, dx, -dy);
             }
 
             lastPos = e.Location;
@@ -99,14 +99,14 @@ namespace lab4
 
         private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
-            draggedInd = -1;
+            draggedPeakInd = -1;
             isDraggin = false;
         }
 
         private void pictureBox_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.Clear(pictureBox.BackColor);
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast, sat);
+            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast, saturation);
             e.Graphics.DrawImage(mainBmp, 0, 0);
         }
 
@@ -117,6 +117,7 @@ namespace lab4
                 ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
+                    InitDefaultRectangle();
                     textureBmp = new Bitmap(ofd.FileName);
                     pictureBox.Invalidate();
                 }
@@ -134,7 +135,38 @@ namespace lab4
             }
         }
 
-        private void btnLight_Click(object? sender, EventArgs? e)
+        private void btnReset_Click(object? sender, EventArgs? e)
+        {
+            if (peaks.Count == 0) return;
+            var result = MessageBox.Show("Are you sure you want to reset the changes?", "Reset",
+                                         MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                InitDefaultRectangle();
+
+                trackContrast.Value = 100;
+                contrast = 1.0f;
+                lblContrast.Text = "1,0";
+                trackGlobalBrightness.Value = 100;
+                globalBr = 1.0f;
+                lblBrightness.Text = "1,0";
+                trackSaturation.Value = 100;
+                saturation = 1.0f;
+                lblSaturation.Text = "1,0";
+
+                for (int i = 0; i < peaks.Count; i++)
+                {
+                    uvNums[i].U.Value = (decimal)peaks[i].U;
+                    uvNums[i].V.Value = (decimal)peaks[i].V;
+                }
+
+                checkLight.Checked = false;
+
+                pictureBox.Invalidate();
+            }
+        }
+
+        private void checkLight_Click(object? sender, EventArgs? e)
         {
             isLight = !isLight;
             pictureBox.Invalidate();
@@ -142,14 +174,47 @@ namespace lab4
 
         private void btnRotateLeft_Click(object? sender, EventArgs? e)
         {
-            Transforms.Rotate(peaks, 10);
+            Transforms.Rotate(peaks, RotateAngle);
             pictureBox.Invalidate();
         }
 
-        private void btnSheerX_Click(object? sender, EventArgs? e)
+        private void btnRotateRight_Click(object? sender, EventArgs? e)
         {
-            //Transforms.ShearX(peaks, 2);
-            Transforms.Scale(peaks, 1.1f, 1.0f);
+            Transforms.Rotate(peaks, -RotateAngle);
+            pictureBox.Invalidate();
+        }
+
+        private void btnScalePlusX_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Scale(peaks, ScalePlus, 1);
+            pictureBox.Invalidate();
+        }
+
+        private void btnScaleMinusX_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Scale(peaks, ScaleMinus, 1);
+            pictureBox.Invalidate();
+        }
+
+        private void btnScalePlusY_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Scale(peaks, 1, ScalePlus);
+            pictureBox.Invalidate();
+        }
+
+        private void btnScaleMinusY_Click(object? sender, EventArgs? e)
+        {
+            Transforms.Scale(peaks, 1, ScaleMinus);
+            pictureBox.Invalidate();
+        }
+
+        private void btnApplyUV_Click(object? sender, EventArgs? e)
+        {
+            for (int i = 0; i < peaks.Count; i++)
+            {
+                peaks[i].U = (float)uvNums[i].U.Value;
+                peaks[i].V = (float)uvNums[i].V.Value;
+            }
             pictureBox.Invalidate();
         }
 
@@ -169,9 +234,22 @@ namespace lab4
 
         private void trackSaturation_Scroll(object? sender, EventArgs e)
         {
-            sat = trackSaturation.Value / 100.0f;
-            lblSaturation.Text = sat.ToString();
+            saturation = trackSaturation.Value / 100.0f;
+            lblSaturation.Text = saturation.ToString();
             pictureBox.Invalidate();
         }
+
+        private void InitDefaultRectangle()
+        {
+            int cx = pictureBox.Width / 2;
+            int cy = pictureBox.Height / 2;
+            peaks.Clear();
+            peaks.Add(new Peak(cx - 250, cy + 250, 0, 1, 1.7f)); // A
+            peaks.Add(new Peak(cx - 250, cy - 250, 0, 0, 1.9f)); // B
+            peaks.Add(new Peak(cx + 250, cy - 250, 1, 0, 1.3f)); // C
+            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.4f)); // D
+        }
+
+        private float GetDist(Point p1, Peak p2) => (float)Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2));
     }
 }
