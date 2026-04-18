@@ -10,6 +10,7 @@ namespace lab4
         Point lastPos;
         bool isLight = false;
         bool isDraggin = false;
+        int draggedInd = -1;
 
         public MainForm()
         {
@@ -29,33 +30,76 @@ namespace lab4
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left && Renderer.IsMouseOver(e.Location, peaks))
+            if (e.Button == MouseButtons.Left)
             {
-                isDraggin = true;
-                lastPos = e.Location;
+                for (int i = 0; i < peaks.Count; i++)
+                {
+                    float dx = e.X - peaks[i].X;
+                    float dy = e.Y - peaks[i].Y;
+                    float distance = (float)Math.Sqrt(dx * dx + dy * dy);
+
+                    if (distance <= 10f)
+                    {
+                        draggedInd = i;
+                        lastPos = e.Location;
+                        return;
+                    }
+                }
+
+                if (Renderer.IsMouseOver(e.Location, peaks))
+                {
+                    isDraggin = true;
+                    lastPos = e.Location;
+                }
             }
         }
 
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!isDraggin)
+            if (draggedInd == -1 && !isDraggin)
             {
-                pictureBox.Cursor = Renderer.IsMouseOver(e.Location, peaks) ? Cursors.Hand : Cursors.Default;
+                bool isHoveringPeak = false;
+
+                foreach (var peak in peaks)
+                {
+                    float dx = e.X - peak.X;
+                    float dy = e.Y - peak.Y;
+                    if (Math.Sqrt(dx * dx + dy * dy) <= 10f)
+                    {
+                        isHoveringPeak = true;
+                        break;
+                    }
+                }
+
+                if (isHoveringPeak)
+                    pictureBox.Cursor = Cursors.Cross;
+                else if (Renderer.IsMouseOver(e.Location, peaks))
+                    pictureBox.Cursor = Cursors.Hand;
+                else
+                    pictureBox.Cursor = Cursors.Default;
+
                 return;
             }
 
-            if (isDraggin)
+            float deltaX = e.X - lastPos.X;
+            float deltaY = e.Y - lastPos.Y;
+            if (draggedInd != - 1)
             {
-                float dx = e.X - lastPos.X;
-                float dy = e.Y - lastPos.Y;
-                Transforms.Move(peaks, dx, -dy);
-                lastPos = e.Location;
-                pictureBox.Invalidate();
+                peaks[draggedInd].X += deltaX;
+                peaks[draggedInd].Y += deltaY;
             }
+            else if (isDraggin)
+            {
+                Transforms.Move(peaks, deltaX, -deltaY);
+            }
+
+            lastPos = e.Location;
+            pictureBox.Invalidate();
         }
 
         private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
+            draggedInd = -1;
             isDraggin = false;
         }
 
