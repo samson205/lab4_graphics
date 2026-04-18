@@ -10,7 +10,7 @@ namespace lab4
         private static byte[] texturePixels = Array.Empty<byte>();
 
         public static void DrawObject(Bitmap mainBmp, Bitmap textureBmp,
-            List<Peak> peaks, bool isLocalBr, float globalBr, float contrast)
+            List<Peak> peaks, bool isLocalBr, float globalBr, float contrast, float sat)
         {
             if (mainBmp == null || textureBmp == null || peaks == null || peaks.Count == 0)
             {
@@ -19,7 +19,7 @@ namespace lab4
 
             lock (_lock)
             {
-                FillFigure(mainBmp, textureBmp, peaks, isLocalBr, globalBr, contrast);
+                FillFigure(mainBmp, textureBmp, peaks, isLocalBr, globalBr, contrast, sat);
                 DrawBorder(mainBmp, peaks);
             }
         }
@@ -53,7 +53,7 @@ namespace lab4
         }
 
         private static void FillFigure(Bitmap mainBmp, Bitmap textureBmp,
-            List<Peak> peaks, bool isLocalBr, float globalBr, float contrast)
+            List<Peak> peaks, bool isLocalBr, float globalBr, float contrast, float sat)
         {
             int mW = mainBmp.Width, mH = mainBmp.Height;
             int tW = textureBmp.Width, tH = textureBmp.Height;
@@ -81,8 +81,7 @@ namespace lab4
             int maxX = (int)Math.Ceiling(peaks.Max(p => p.X));
             int minY = (int)Math.Floor(peaks.Min(p => p.Y));
             int maxY = (int)Math.Ceiling(peaks.Max(p => p.Y));
-            //for (int y = minY; y <= maxY; y++)
-            Parallel.For(minY, maxY, y =>
+            Parallel.For(minY, maxY + 1, y =>
             {
                 if (y < 0 || y >= mH) return;
                 for (int x = minX; x <= maxX; x++)
@@ -117,6 +116,11 @@ namespace lab4
                     float b = ((float)texturePixels[textureInd] - 128f) * contrast + 128f;
                     float g = ((float)texturePixels[textureInd + 1] - 128f) * contrast + 128f;
                     float r = ((float)texturePixels[textureInd + 2] - 128f) * contrast + 128f;
+
+                    float gray = r * 0.299f + g * 0.587f + b * 0.114f;
+                    b = gray + (b - gray) * sat;
+                    g = gray + (g - gray) * sat;
+                    r = gray + (r - gray) * sat;
 
                     float br = localBr * globalBr;
                     mainPixels[mainInd] = (byte)Math.Clamp(b * br, 0, 255);

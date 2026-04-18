@@ -6,7 +6,7 @@ namespace lab4
         Bitmap textureBmp;
         List<Peak> peaks = new List<Peak>();
 
-        float globalBr = 1.0f, contrast = 1.0f;
+        float globalBr = 1.0f, contrast = 1.0f, sat = 1.0f;
         Point lastPos;
         bool isLight = false;
         bool isDraggin = false;
@@ -58,7 +58,7 @@ namespace lab4
         {
             if (draggedInd == -1 && !isDraggin)
             {
-                bool isHoveringPeak = false;
+                bool isOverPeak = false;
 
                 foreach (var peak in peaks)
                 {
@@ -66,12 +66,12 @@ namespace lab4
                     float dy = e.Y - peak.Y;
                     if (Math.Sqrt(dx * dx + dy * dy) <= 10f)
                     {
-                        isHoveringPeak = true;
+                        isOverPeak = true;
                         break;
                     }
                 }
 
-                if (isHoveringPeak)
+                if (isOverPeak)
                     pictureBox.Cursor = Cursors.Cross;
                 else if (Renderer.IsMouseOver(e.Location, peaks))
                     pictureBox.Cursor = Cursors.Hand;
@@ -106,7 +106,7 @@ namespace lab4
         private void pictureBox_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.Clear(pictureBox.BackColor);
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
+            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast, sat);
             e.Graphics.DrawImage(mainBmp, 0, 0);
         }
 
@@ -119,6 +119,17 @@ namespace lab4
                 {
                     textureBmp = new Bitmap(ofd.FileName);
                     pictureBox.Invalidate();
+                }
+            }
+        }
+        private void btnSave_Click(object? sender, EventArgs? e)
+        {
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "PNG Image|*.png|JPEG Image|*.jpg";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    mainBmp.Save(sfd.FileName);
                 }
             }
         }
@@ -137,19 +148,29 @@ namespace lab4
 
         private void btnSheerX_Click(object? sender, EventArgs? e)
         {
-            Transforms.ShearX(peaks, 2);
+            //Transforms.ShearX(peaks, 2);
+            Transforms.Scale(peaks, 1.1f, 1.0f);
             pictureBox.Invalidate();
         }
 
         private void trackGlobalBrightness_Scroll(object? sender, EventArgs e)
         {
             globalBr = trackGlobalBrightness.Value / 100.0f;
+            lblBrightness.Text = globalBr.ToString();
             pictureBox.Invalidate();
         }
 
         private void trackContrast_Scroll(object? sender, EventArgs e)
         {
             contrast = trackContrast.Value / 100.0f;
+            lblContrast.Text = contrast.ToString();
+            pictureBox.Invalidate();
+        }
+
+        private void trackSaturation_Scroll(object? sender, EventArgs e)
+        {
+            sat = trackSaturation.Value / 100.0f;
+            lblSaturation.Text = sat.ToString();
             pictureBox.Invalidate();
         }
     }
