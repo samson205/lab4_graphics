@@ -4,14 +4,34 @@ namespace lab4
 {
     internal static class Renderer
     {
+        private static readonly object _lock = new object();
+
         private static byte[] mainPixels = Array.Empty<byte>();
         private static byte[] texturePixels = Array.Empty<byte>();
 
         public static void DrawObject(Bitmap mainBmp, Bitmap textureBmp,
             List<Peak> peaks, bool isLocalBr, float globalBr, float contrast)
         {
-            FillFigure(mainBmp, textureBmp, peaks, isLocalBr, globalBr, contrast);
-            DrawBorder(mainBmp, peaks);
+            if (mainBmp == null || textureBmp == null || peaks == null || peaks.Count == 0)
+            {
+                return;
+            }
+
+            lock (_lock)
+            {
+                FillFigure(mainBmp, textureBmp, peaks, isLocalBr, globalBr, contrast);
+                DrawBorder(mainBmp, peaks);
+            }
+        }
+
+        public static bool IsMouseOver(Point mouseP, List<Peak> peaks)
+        {
+            PointF p = new PointF(mouseP.X, mouseP.Y);
+            PointF pA = new PointF(peaks[0].X, peaks[0].Y);
+            PointF pB = new PointF(peaks[1].X, peaks[1].Y);
+            PointF pC = new PointF(peaks[2].X, peaks[2].Y);
+            PointF pD = new PointF(peaks[3].X, peaks[3].Y);
+            return IsPointInTriangle(p, pA, pB, pC, pD, out _, out _, out _) != 0;
         }
 
         private static void DrawBorder(Bitmap mainBmp, List<Peak> peaks)
@@ -61,9 +81,10 @@ namespace lab4
             int maxX = (int)Math.Ceiling(peaks.Max(p => p.X));
             int minY = (int)Math.Floor(peaks.Min(p => p.Y));
             int maxY = (int)Math.Ceiling(peaks.Max(p => p.Y));
-            for (int y = minY; y <= maxY; y++)
+            //for (int y = minY; y <= maxY; y++)
+            Parallel.For(minY, maxY, y =>
             {
-                if (y < 0 || y >= mH) continue;
+                if (y < 0 || y >= mH) return;
                 for (int x = minX; x <= maxX; x++)
                 {
                     if (x < 0 || x >= mW) continue;
@@ -103,7 +124,7 @@ namespace lab4
                     mainPixels[mainInd + 2] = (byte)Math.Clamp(r * br, 0, 255);
                     mainPixels[mainInd + 3] = 255;
                 }
-            }
+            });
             Marshal.Copy(mainPixels, 0, mainData.Scan0, mainCount);
             mainBmp.UnlockBits(mainData);
             textureBmp.UnlockBits(textureData);

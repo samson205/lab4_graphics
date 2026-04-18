@@ -7,7 +7,9 @@ namespace lab4
         List<Peak> peaks = new List<Peak>();
 
         float globalBr = 1.0f, contrast = 1.0f;
+        Point lastPos;
         bool isLight = false;
+        bool isDraggin = false;
 
         public MainForm()
         {
@@ -22,8 +24,46 @@ namespace lab4
             peaks.Add(new Peak(cx + 250, cy - 250, 1, 0, 1.3f)); // C
             peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.4f)); // D
 
-            btnMoveLeft.Click += btnMoveLeft_Click;
             btnMoveRight.Click += btnSheerX_Click;
+        }
+
+        private void pictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && Renderer.IsMouseOver(e.Location, peaks))
+            {
+                isDraggin = true;
+                lastPos = e.Location;
+            }
+        }
+
+        private void pictureBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!isDraggin)
+            {
+                pictureBox.Cursor = Renderer.IsMouseOver(e.Location, peaks) ? Cursors.Hand : Cursors.Default;
+                return;
+            }
+
+            if (isDraggin)
+            {
+                float dx = e.X - lastPos.X;
+                float dy = e.Y - lastPos.Y;
+                Transforms.Move(peaks, dx, -dy);
+                lastPos = e.Location;
+                pictureBox.Invalidate();
+            }
+        }
+
+        private void pictureBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            isDraggin = false;
+        }
+
+        private void pictureBox_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.Clear(pictureBox.BackColor);
+            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
+            e.Graphics.DrawImage(mainBmp, 0, 0);
         }
 
         private void btnLoad_Click(object? sender, EventArgs? e)
@@ -34,7 +74,6 @@ namespace lab4
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     textureBmp = new Bitmap(ofd.FileName);
-                    Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
                     pictureBox.Invalidate();
                 }
             }
@@ -43,49 +82,30 @@ namespace lab4
         private void btnLight_Click(object? sender, EventArgs? e)
         {
             isLight = !isLight;
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
             pictureBox.Invalidate();
         }
 
-        private void btnMoveLeft_Click(object? sender, EventArgs? e)
-        {
-            Transforms.Move(peaks, -10, 0);
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
-            pictureBox.Invalidate();
-        }
-
-        private void btnMoveRight_Click(object? sender, EventArgs? e)
-        {
-            Transforms.Move(peaks, 10, 0);
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
-            pictureBox.Invalidate();
-        }
-
-        private void btnRotateRight_Click(object? sender, EventArgs? e)
+        private void btnRotateLeft_Click(object? sender, EventArgs? e)
         {
             Transforms.Rotate(peaks, 10);
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
             pictureBox.Invalidate();
         }
 
         private void btnSheerX_Click(object? sender, EventArgs? e)
         {
             Transforms.ShearX(peaks, 2);
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
             pictureBox.Invalidate();
         }
 
         private void trackGlobalBrightness_Scroll(object? sender, EventArgs e)
         {
             globalBr = trackGlobalBrightness.Value / 100.0f;
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
             pictureBox.Invalidate();
         }
 
         private void trackContrast_Scroll(object? sender, EventArgs e)
         {
             contrast = trackContrast.Value / 100.0f;
-            Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast);
             pictureBox.Invalidate();
         }
     }

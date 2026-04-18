@@ -2,45 +2,6 @@
 {
     internal static class Transforms
     {
-        private static float[,] MultiplyMatrix(float[,] a, float[,] b)
-        {
-            float[,] result = new float[3, 3];
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    result[i, j] = 0;
-                    for (int k = 0; k < 3; k++)
-                    {
-                        result[i, j] += a[i, k] * b[k, j];
-                    }
-                }
-            }
-            return result;
-        }
-
-        private static void ApplyMatrix(List<Peak> peaks, float[,] matrix)
-        {
-            var result = new List<PointF>();
-            foreach (var p in peaks)
-            {
-                float newX = p.X * matrix[0, 0] + p.Y * matrix[1, 0] + 1 * matrix[2, 0];
-                float newY = p.X * matrix[0, 1] + p.Y * matrix[1, 1] + 1 * matrix[2, 1];
-                p.X = newX;
-                p.Y = newY;
-            }
-        }
-
-        private static float[,] TranslationMatrix(float dx, float dy)
-        {
-            return new float[,]
-            {
-            { 1,  0,  0 },
-            { 0,  1,  0 },
-            { dx, dy, 1 }
-            };
-        }
-
         public static void Move(List<Peak> peaks, float dx, float dy)
         {
             float[,] m = TranslationMatrix(dx, -dy);
@@ -114,6 +75,45 @@
             };
             float[,] toCenter = TranslationMatrix(cx, cy);
             ApplyMatrix(peaks, MultiplyMatrix(MultiplyMatrix(toOrigin, shear), toCenter));
+        }
+
+        private static float[,] MultiplyMatrix(float[,] a, float[,] b)
+        {
+            float[,] result = new float[3, 3];
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    result[i, j] = 0;
+                    for (int k = 0; k < 3; k++)
+                    {
+                        result[i, j] += a[i, k] * b[k, j];
+                    }
+                }
+            }
+            return result;
+        }
+
+        private static void ApplyMatrix(List<Peak> peaks, float[,] matrix)
+        {
+            var result = new List<PointF>();
+            foreach (var p in peaks)
+            {
+                float newX = p.X * matrix[0, 0] + p.Y * matrix[1, 0] + 1 * matrix[2, 0];
+                float newY = p.X * matrix[0, 1] + p.Y * matrix[1, 1] + 1 * matrix[2, 1];
+                p.X = newX;
+                p.Y = newY;
+            }
+        }
+
+        private static float[,] TranslationMatrix(float dx, float dy)
+        {
+            return new float[,]
+            {
+            { 1,  0,  0 },
+            { 0,  1,  0 },
+            { dx, dy, 1 }
+            };
         }
     }
 }
