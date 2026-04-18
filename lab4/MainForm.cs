@@ -10,7 +10,6 @@ namespace lab4
         List<Peak> peaks = new List<Peak>();
 
         float globalBr = 1.0f, contrast = 1.0f;
-
         bool isLight = false;
 
         public MainForm()
@@ -40,67 +39,54 @@ namespace lab4
                 ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
                 if (ofd.ShowDialog() == DialogResult.OK)
                     textureBmp = new Bitmap(ofd.FileName);
-                    FillFigure(isLight);
-                    DrawBorder();
-                    pictureBox.Invalidate();
+                DrawObject();
             }
         }
 
         private void btnLight_Click(object? sender, EventArgs? e)
         {
             isLight = !isLight;
-            FillFigure(isLight);
-            DrawBorder();
-            pictureBox.Invalidate();
+            DrawObject();
         }
 
         private void btnMoveLeft_Click(object? sender, EventArgs? e)
         {
             Transforms.Move(peaks, -10, 0);
-
-            FillFigure(isLight);
-            DrawBorder();
-            pictureBox.Invalidate();
+            DrawObject();
         }
 
         private void btnMoveRight_Click(object? sender, EventArgs? e)
         {
             Transforms.Move(peaks, 10, 0);
-
-            FillFigure(isLight);
-            DrawBorder();
-            pictureBox.Invalidate();
+            DrawObject();
         }
 
         private void btnRotateRight_Click(object? sender, EventArgs? e)
         {
             Transforms.Rotate(peaks, 10);
-
-            FillFigure(isLight);
-            DrawBorder();
-            pictureBox.Invalidate();
+            DrawObject();
         }
 
         private void btnSheerX_Click(object? sender, EventArgs? e)
         {
             Transforms.ShearX(peaks, 2);
-
-            FillFigure(isLight);
-            DrawBorder();
-            pictureBox.Invalidate();
+            DrawObject();
         }
 
         private void trackGlobalBrightness_Scroll(object? sender, EventArgs e)
         {
             globalBr = trackGlobalBrightness.Value / 100.0f;
-            FillFigure(isLight);
-            DrawBorder();
-            pictureBox.Invalidate();
+            DrawObject();
         }
 
         private void trackContrast_Scroll(object? sender, EventArgs e)
         {
             contrast = trackContrast.Value / 100.0f;
+            DrawObject();
+        }
+
+        private void DrawObject()
+        {
             FillFigure(isLight);
             DrawBorder();
             pictureBox.Invalidate();
