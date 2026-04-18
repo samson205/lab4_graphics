@@ -47,7 +47,7 @@
             pictureBox.Location = new Point(0, 0);
             pictureBox.Margin = new Padding(5);
             pictureBox.Name = "pictureBox";
-            pictureBox.Size = new Size(1124, 618);
+            pictureBox.Size = new Size(1184, 701);
             pictureBox.TabIndex = 0;
             pictureBox.TabStop = false;
             pictureBox.Paint += pictureBox_Paint;
@@ -57,7 +57,7 @@
             // 
             // button1
             // 
-            button1.Location = new Point(637, 628);
+            button1.Location = new Point(641, 711);
             button1.Margin = new Padding(5);
             button1.Name = "button1";
             button1.Size = new Size(118, 38);
@@ -68,7 +68,7 @@
             // 
             // trackGlobalBrightness
             // 
-            trackGlobalBrightness.Location = new Point(778, 628);
+            trackGlobalBrightness.Location = new Point(782, 711);
             trackGlobalBrightness.Maximum = 200;
             trackGlobalBrightness.Name = "trackGlobalBrightness";
             trackGlobalBrightness.Size = new Size(334, 45);
@@ -80,7 +80,7 @@
             // 
             // btnLight
             // 
-            btnLight.Location = new Point(529, 628);
+            btnLight.Location = new Point(533, 711);
             btnLight.Name = "btnLight";
             btnLight.Size = new Size(100, 38);
             btnLight.TabIndex = 4;
@@ -90,7 +90,7 @@
             // 
             // trackContrast
             // 
-            trackContrast.Location = new Point(12, 626);
+            trackContrast.Location = new Point(16, 709);
             trackContrast.Maximum = 200;
             trackContrast.Name = "trackContrast";
             trackContrast.Size = new Size(334, 45);
@@ -102,7 +102,7 @@
             // 
             // btnMoveRight
             // 
-            btnMoveRight.Location = new Point(478, 628);
+            btnMoveRight.Location = new Point(482, 711);
             btnMoveRight.Name = "btnMoveRight";
             btnMoveRight.Size = new Size(45, 38);
             btnMoveRight.TabIndex = 6;
@@ -111,7 +111,7 @@
             // 
             // btnMoveLeft
             // 
-            btnMoveLeft.Location = new Point(427, 628);
+            btnMoveLeft.Location = new Point(431, 711);
             btnMoveLeft.Name = "btnMoveLeft";
             btnMoveLeft.Size = new Size(45, 38);
             btnMoveLeft.TabIndex = 7;
@@ -123,7 +123,7 @@
             AutoScaleDimensions = new SizeF(11F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlLight;
-            ClientSize = new Size(1124, 680);
+            ClientSize = new Size(1184, 761);
             Controls.Add(btnMoveLeft);
             Controls.Add(btnMoveRight);
             Controls.Add(trackContrast);
@@ -131,6 +131,7 @@
             Controls.Add(trackGlobalBrightness);
             Controls.Add(button1);
             Controls.Add(pictureBox);
+            DoubleBuffered = true;
             Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Margin = new Padding(5);
