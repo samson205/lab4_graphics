@@ -34,6 +34,13 @@ namespace lab4
             pictureBox.Image = mainBmp;
         }
 
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized) return;
+            mainBmp = new Bitmap(pictureBox.Width, pictureBox.Height);
+            pictureBox.Invalidate();
+        }
+
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
             if (peaks.Count == 0) return;

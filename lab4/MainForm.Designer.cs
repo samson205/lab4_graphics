@@ -134,7 +134,7 @@
             pictureBox.Location = new Point(0, 0);
             pictureBox.Margin = new Padding(5);
             pictureBox.Name = "pictureBox";
-            pictureBox.Size = new Size(926, 844);
+            pictureBox.Size = new Size(926, 861);
             pictureBox.TabIndex = 0;
             pictureBox.TabStop = false;
             pictureBox.Paint += pictureBox_Paint;
@@ -238,7 +238,7 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(pictureBox);
-            splitContainer.Size = new Size(1184, 844);
+            splitContainer.Size = new Size(1184, 861);
             splitContainer.SplitterDistance = 254;
             splitContainer.TabIndex = 8;
             // 
@@ -255,14 +255,14 @@
             tlpBottomBtns.RowCount = 1;
             tlpBottomBtns.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tlpBottomBtns.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tlpBottomBtns.Size = new Size(254, 41);
+            tlpBottomBtns.Size = new Size(254, 58);
             tlpBottomBtns.TabIndex = 23;
             // 
             // btnApplyUV
             // 
             btnApplyUV.Anchor = AnchorStyles.None;
             btnApplyUV.Font = new Font("Segoe UI", 12F);
-            btnApplyUV.Location = new Point(16, 3);
+            btnApplyUV.Location = new Point(16, 12);
             btnApplyUV.Name = "btnApplyUV";
             btnApplyUV.Size = new Size(95, 34);
             btnApplyUV.TabIndex = 13;
@@ -275,7 +275,7 @@
             checkLight.Anchor = AnchorStyles.None;
             checkLight.Appearance = Appearance.Button;
             checkLight.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkLight.Location = new Point(143, 3);
+            checkLight.Location = new Point(143, 12);
             checkLight.Name = "checkLight";
             checkLight.Size = new Size(95, 34);
             checkLight.TabIndex = 12;
@@ -971,16 +971,16 @@
             AutoScaleDimensions = new SizeF(11F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
-            ClientSize = new Size(1184, 844);
+            ClientSize = new Size(1184, 861);
             Controls.Add(splitContainer);
             DoubleBuffered = true;
             Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
             Margin = new Padding(5);
-            MaximizeBox = false;
+            MinimumSize = new Size(1200, 900);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ЛР4";
+            Resize += MainForm_Resize;
             ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackGlobalBrightness).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackContrast).EndInit();
