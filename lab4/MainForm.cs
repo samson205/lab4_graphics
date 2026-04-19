@@ -14,6 +14,8 @@ namespace lab4
         float globalBr = 1.0f, contrast = 1.0f, saturation = 1.0f;
         Point lastPos;
         bool isLight = false;
+        bool isWarned = false;
+        bool isFirstLoad = true;
         bool isDraggin = false;
         int draggedPeakInd = -1;
 
@@ -117,8 +119,12 @@ namespace lab4
                 ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    InitDefaultRectangle();
                     textureBmp = new Bitmap(ofd.FileName);
+                    if (isFirstLoad)
+                    {
+                        InitDefaultRectangle();
+                        isFirstLoad = false;
+                    }
                     pictureBox.Invalidate();
                 }
             }
@@ -138,7 +144,7 @@ namespace lab4
         private void btnReset_Click(object? sender, EventArgs? e)
         {
             if (peaks.Count == 0) return;
-            var result = MessageBox.Show("Are you sure you want to reset the changes?", "Reset",
+            var result = MessageBox.Show("Are you sure you want to reset the changes?", "Warning",
                                          MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
@@ -161,6 +167,7 @@ namespace lab4
                 }
 
                 checkLight.Checked = false;
+                isLight = false;
 
                 pictureBox.Invalidate();
             }
@@ -168,6 +175,14 @@ namespace lab4
 
         private void checkLight_Click(object? sender, EventArgs? e)
         {
+            if (!isWarned)
+            {
+                var result = MessageBox.Show("This is an experimental feature.\nDo you want to continue?", "Warning",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result != DialogResult.Yes) { checkLight.Checked = false; return; }
+                else isWarned = true;
+            }
+
             isLight = !isLight;
             pictureBox.Invalidate();
         }
@@ -247,7 +262,7 @@ namespace lab4
             peaks.Add(new Peak(cx - 250, cy + 250, 0, 1, 1.7f)); // A
             peaks.Add(new Peak(cx - 250, cy - 250, 0, 0, 1.9f)); // B
             peaks.Add(new Peak(cx + 250, cy - 250, 1, 0, 1.3f)); // C
-            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.4f)); // D
+            peaks.Add(new Peak(cx + 250, cy + 250, 1, 1, 0.7f)); // D
         }
 
         private float GetDist(Point p1, Peak p2) => (float)Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2));
