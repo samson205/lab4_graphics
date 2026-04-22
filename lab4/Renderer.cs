@@ -149,10 +149,10 @@ namespace lab4
                     int xNext = Math.Min(intX + 1, tW - 1);
                     int yNext = Math.Min(intY + 1, tH - 1);
 
-                    int iTL = (intY * tW + intX) * 4;
-                    int iTR = (intY * tW + xNext) * 4;
-                    int iBL = (yNext * tW + intX) * 4;
-                    int iBR = (yNext * tW + xNext) * 4;
+                    int iTL = intY * textureData.Stride + intX * 4;
+                    int iTR = intY * textureData.Stride + xNext * 4;
+                    int iBL = yNext * textureData.Stride + intX * 4;
+                    int iBR = yNext * textureData.Stride + xNext * 4;
 
                     float wTL = (1 - dx) * (1 - dy);
                     float wTR = dx * (1 - dy);
