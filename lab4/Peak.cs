@@ -8,7 +8,7 @@
         public float V { get; set; }
         public float Br { get; set; }
 
-        public Peak(int x, int y, float u, float v, float br)
+        public Peak(float x, float y, float u, float v, float br)
         {
             X = x;
             Y = y;

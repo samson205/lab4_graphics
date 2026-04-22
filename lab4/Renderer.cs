@@ -139,14 +139,40 @@ namespace lab4
                             localBr = w1 * peaks[0].Br + w2 * peaks[3].Br + w3 * peaks[2].Br;
                     }
 
-                    int textureX = Math.Clamp((int)(u * (tW - 1)), 0, tW - 1);
-                    int textureY = Math.Clamp((int)(v * (tH - 1)), 0, tH - 1);
-                    int textureInd = textureY * textureData.Stride + textureX * 4;
+                    float textureX = Math.Clamp((u * (tW - 1)), 0, tW - 1);
+                    float textureY = Math.Clamp((v * (tH - 1)), 0, tH - 1);
+                    int textureInd = (int)(textureY * textureData.Stride + textureX * 4);
                     int mainInd = y * mainData.Stride + x * 4;
 
-                    float b = ((float)texturePixels[textureInd] - 128f) * contrast + 128f;
-                    float g = ((float)texturePixels[textureInd + 1] - 128f) * contrast + 128f;
-                    float r = ((float)texturePixels[textureInd + 2] - 128f) * contrast + 128f;
+                    int intX = (int)Math.Floor(textureX);
+                    int intY = (int)Math.Floor(textureY);
+                    float dx = textureX - intX;
+                    float dy = textureY - intY;
+                    int xNext = Math.Min(intX + 1, tW - 1);
+                    int yNext = Math.Min(intY + 1, tH - 1);
+
+                    int iTL = (intY * tW + intX) * 4;
+                    int iTR = (intY * tW + xNext) * 4;
+                    int iBL = (yNext * tW + intX) * 4;
+                    int iBR = (yNext * tW + xNext) * 4;
+
+                    float wTL = (1 - dx) * (1 - dy);
+                    float wTR = dx * (1 - dy);
+                    float wBL = (1 - dx) * dy;
+                    float wBR = dx * dy;
+
+                    float b = texturePixels[iTL] * wTL + texturePixels[iTR] * wTR +
+                              texturePixels[iBL] * wBL + texturePixels[iBR] * wBR;
+
+                    float g = texturePixels[iTL + 1] * wTL + texturePixels[iTR + 1] * wTR +
+                              texturePixels[iBL + 1] * wBL + texturePixels[iBR + 1] * wBR;
+
+                    float r = texturePixels[iTL + 2] * wTL + texturePixels[iTR + 2] * wTR +
+                              texturePixels[iBL + 2] * wBL + texturePixels[iBR + 2] * wBR;
+
+                    b = (b - 128f) * contrast + 128f;
+                    g = (g - 128f) * contrast + 128f;
+                    r = (r - 128f) * contrast + 128f;
 
                     float gray = r * 0.299f + g * 0.587f + b * 0.114f;
                     b = gray + (b - gray) * sat;
