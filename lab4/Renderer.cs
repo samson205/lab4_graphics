@@ -26,12 +26,11 @@ namespace lab4
 
         public static bool IsMouseOver(Point mouseP, List<Peak> peaks)
         {
-            PointF p = new PointF(mouseP.X, mouseP.Y);
             PointF pA = new PointF(peaks[0].X, peaks[0].Y);
             PointF pB = new PointF(peaks[1].X, peaks[1].Y);
             PointF pC = new PointF(peaks[2].X, peaks[2].Y);
             PointF pD = new PointF(peaks[3].X, peaks[3].Y);
-            return IsPointInTriangle(p, pA, pB, pC, pD, out _, out _, out _) != 0;
+            return IsPointInTriangle(mouseP.X, mouseP.Y, pA, pB, pC, pD, out _, out _, out _) != 0;
         }
 
         public static int IsMouseOnSide(Point mouseP, List<Peak> peaks)
@@ -118,8 +117,7 @@ namespace lab4
                 for (int x = minX; x <= maxX; x++)
                 {
                     if (x < 0 || x >= mW) continue;
-                    PointF p = new PointF(x, y);
-                    int isPointIn = IsPointInTriangle(p, pA, pB, pC, pD,
+                    int isPointIn = IsPointInTriangle(x, y, pA, pB, pC, pD,
                         out float w1, out float w2, out float w3);
 
                     float u, v, localBr = 1;
@@ -191,21 +189,21 @@ namespace lab4
             textureBmp.UnlockBits(textureData);
         }
 
-        private static int IsPointInTriangle(PointF p, PointF pA, PointF pB, PointF pC, PointF pD,
+        private static int IsPointInTriangle(float x, float y, PointF pA, PointF pB, PointF pC, PointF pD,
             out float w1, out float w2, out float w3)
         {
-            BarycentricCoordinates(p, pA, pB, pC, out w1, out w2, out w3);
+            BarycentricCoordinates(x, y, pA, pB, pC, out w1, out w2, out w3);
             bool isIn = w1 >= -0.001f && w2 >= -0.001f && w3 >= -0.001f;
             if (isIn) return 1;
             
-            BarycentricCoordinates(p, pA, pD, pC, out w1, out w2, out w3);
+            BarycentricCoordinates(x, y, pA, pD, pC, out w1, out w2, out w3);
             isIn = w1 >= -0.001f && w2 >= -0.001f && w3 >= -0.001f;
             if (isIn) return 2;
 
             return 0;
         }
 
-        private static void BarycentricCoordinates(PointF p,
+        private static void BarycentricCoordinates(float x, float y,
             PointF x1, PointF x2, PointF x3,
             out float w1, out float w2, out float w3) 
         {
@@ -216,8 +214,8 @@ namespace lab4
                 w1 = w2 = w3 = 0;
                 return;
             }
-            w1 = ((p.X - x3.X) * (x2.Y - x3.Y) - (x2.X - x3.X) * (p.Y - x3.Y)) / triangleS;
-            w2 = ((x1.X - x3.X) * (p.Y - x3.Y) - (p.X - x3.X) * (x1.Y - x3.Y)) / triangleS;
+            w1 = ((x - x3.X) * (x2.Y - x3.Y) - (x2.X - x3.X) * (y - x3.Y)) / triangleS;
+            w2 = ((x1.X - x3.X) * (y - x3.Y) - (x - x3.X) * (x1.Y - x3.Y)) / triangleS;
             w3 = 1.0f - w1 - w2;
         }
     }
