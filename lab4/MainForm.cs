@@ -142,7 +142,6 @@ namespace lab4
 
         private void pictureBox_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.Clear(pictureBox.BackColor);
             Renderer.DrawObject(mainBmp, textureBmp, peaks, isLight, globalBr, contrast, saturation);
             e.Graphics.DrawImage(mainBmp, 0, 0);
         }

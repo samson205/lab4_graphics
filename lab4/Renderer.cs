@@ -1,5 +1,7 @@
 ﻿using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 namespace lab4
 {
     internal static class Renderer
@@ -20,7 +22,6 @@ namespace lab4
             lock (_lock)
             {
                 FillFigure(mainBmp, textureBmp, peaks, isLocalBr, globalBr, contrast, sat);
-                DrawBorder(mainBmp, peaks);
             }
         }
 
@@ -64,22 +65,23 @@ namespace lab4
             return -1;
         }
 
-        private static void DrawBorder(Bitmap mainBmp, List<Peak> peaks)
+        private static void DrawBorder(int width, int height, int stride, List<Peak> peaks)
         {
-            using (Graphics g = Graphics.FromImage(mainBmp))
-            {
-                using (Pen pen = new Pen(Color.Red))
-                {
-                    PointF[] points = new PointF[] 
-                    {
-                        new PointF(peaks[0].X, peaks[0].Y),
-                        new PointF(peaks[1].X, peaks[1].Y),
-                        new PointF(peaks[2].X, peaks[2].Y),
-                        new PointF(peaks[3].X, peaks[3].Y)
-                    };
-                    g.DrawPolygon(pen, points);
-                }
-            }
+            DrawLine.BresenhamLine(mainPixels, stride,
+                (int)peaks[0].X, (int)peaks[0].Y,
+                (int)peaks[1].X, (int)peaks[1].Y, Color.Red, width, height);
+
+            DrawLine.BresenhamLine(mainPixels, stride,
+                (int)peaks[1].X, (int)peaks[1].Y,
+                (int)peaks[2].X, (int)peaks[2].Y, Color.Red, width, height);
+
+            DrawLine.BresenhamLine(mainPixels, stride,
+                (int)peaks[2].X, (int)peaks[2].Y,
+                (int)peaks[3].X, (int)peaks[3].Y, Color.Red, width, height);
+
+            DrawLine.BresenhamLine(mainPixels, stride,
+                (int)peaks[3].X, (int)peaks[3].Y,
+                (int)peaks[0].X, (int)peaks[0].Y, Color.Red, width, height);
         }
 
         private static void FillFigure(Bitmap mainBmp, Bitmap textureBmp,
@@ -100,7 +102,13 @@ namespace lab4
                 ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
 
             Marshal.Copy(textureData.Scan0, texturePixels, 0, textureCount);
-            Array.Clear(mainPixels, 0, mainCount);
+            for (int i = 0; i < mainCount; i += 4)
+            {
+                mainPixels[i] = 255;
+                mainPixels[i + 1] = 255;
+                mainPixels[i + 2] = 255;
+                mainPixels[i + 3] = 255;
+            }
 
             PointF pA = new PointF(peaks[0].X, peaks[0].Y);
             PointF pB = new PointF(peaks[1].X, peaks[1].Y);
@@ -184,6 +192,8 @@ namespace lab4
                     mainPixels[mainInd + 3] = 255;
                 }
             });
+            DrawBorder(mW, mH, mainData.Stride, peaks);
+
             Marshal.Copy(mainPixels, 0, mainData.Scan0, mainCount);
             mainBmp.UnlockBits(mainData);
             textureBmp.UnlockBits(textureData);
