@@ -94,7 +94,8 @@ namespace lab4
                 if (isOverPeak)
                     pictureBox.Cursor = Cursors.Cross;
                 else if (isMouseOnSide != -1)
-                    pictureBox.Cursor = Cursors.SizeAll;
+                    if (isMouseOnSide % 2 == 0) pictureBox.Cursor = Cursors.SizeWE;
+                    else pictureBox.Cursor = Cursors.SizeNS;
                 else if (Renderer.IsMouseOver(e.Location, peaks))
                     pictureBox.Cursor = Cursors.Hand;
                 else
@@ -223,36 +224,42 @@ namespace lab4
 
         private void btnRotateLeft_Click(object? sender, EventArgs? e)
         {
+            if (peaks.Count == 0) return;
             Transforms.Rotate(peaks, RotateAngle);
             pictureBox.Invalidate();
         }
 
         private void btnRotateRight_Click(object? sender, EventArgs? e)
         {
+            if (peaks.Count == 0) return;
             Transforms.Rotate(peaks, -RotateAngle);
             pictureBox.Invalidate();
         }
 
         private void btnScalePlusX_Click(object? sender, EventArgs? e)
         {
+            if (peaks.Count == 0) return;
             Transforms.Scale(peaks, ScalePlus, 1);
             pictureBox.Invalidate();
         }
 
         private void btnScaleMinusX_Click(object? sender, EventArgs? e)
         {
+            if (peaks.Count == 0) return;
             Transforms.Scale(peaks, ScaleMinus, 1);
             pictureBox.Invalidate();
         }
 
         private void btnScalePlusY_Click(object? sender, EventArgs? e)
         {
+            if (peaks.Count == 0) return;
             Transforms.Scale(peaks, 1, ScalePlus);
             pictureBox.Invalidate();
         }
 
         private void btnScaleMinusY_Click(object? sender, EventArgs? e)
         {
+            if (peaks.Count == 0) return;
             Transforms.Scale(peaks, 1, ScaleMinus);
             pictureBox.Invalidate();
         }
