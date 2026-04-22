@@ -18,6 +18,7 @@ namespace lab4
         bool isFirstLoad = true;
         bool isDraggin = false;
         int draggedPeakInd = -1;
+        int draggedSideInd = -1;
 
         public MainForm()
         {
@@ -56,6 +57,14 @@ namespace lab4
                     }
                 }
 
+                int draggedSide = Renderer.IsMouseOnSide(e.Location, peaks);
+                if (draggedSide != -1)
+                {
+                    draggedSideInd = draggedSide;
+                    lastPos = e.Location;
+                    return;
+                }
+
                 if (Renderer.IsMouseOver(e.Location, peaks))
                 {
                     isDraggin = true;
@@ -67,7 +76,7 @@ namespace lab4
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (peaks.Count == 0) return;
-            if (draggedPeakInd == -1 && !isDraggin)
+            if (draggedPeakInd == -1 && draggedSideInd == -1 && !isDraggin)
             {
                 bool isOverPeak = false;
 
@@ -80,8 +89,12 @@ namespace lab4
                     }
                 }
 
+                int isMouseOnSide = Renderer.IsMouseOnSide(e.Location, peaks);
+
                 if (isOverPeak)
                     pictureBox.Cursor = Cursors.Cross;
+                else if (isMouseOnSide != -1)
+                    pictureBox.Cursor = Cursors.SizeAll;
                 else if (Renderer.IsMouseOver(e.Location, peaks))
                     pictureBox.Cursor = Cursors.Hand;
                 else
@@ -97,6 +110,19 @@ namespace lab4
                 peaks[draggedPeakInd].X += dx;
                 peaks[draggedPeakInd].Y += dy;
             }
+            else if (draggedSideInd != - 1)
+            {
+                if (draggedSideInd % 2 == 0)
+                {
+                    peaks[draggedSideInd].X += dx;
+                    peaks[(draggedSideInd + 1) % peaks.Count].X += dx;
+                }
+                else
+                {
+                    peaks[draggedSideInd].Y += dy;
+                    peaks[(draggedSideInd + 1) % peaks.Count].Y += dy;
+                }
+            }
             else if (isDraggin)
             {
                 Transforms.Move(peaks, dx, -dy);
@@ -109,6 +135,7 @@ namespace lab4
         private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
             draggedPeakInd = -1;
+            draggedSideInd = -1;
             isDraggin = false;
         }
 

@@ -34,6 +34,37 @@ namespace lab4
             return IsPointInTriangle(p, pA, pB, pC, pD, out _, out _, out _) != 0;
         }
 
+        public static int IsMouseOnSide(Point mouseP, List<Peak> peaks)
+        {
+            const float threshold = 5f;
+
+            for (int i = 0; i < peaks.Count; i++)
+            {
+                var p1 = peaks[i];
+                var p2 = peaks[(i + 1) % peaks.Count];
+
+                if (mouseP.X < Math.Min(p1.X, p2.X) - threshold ||
+                    mouseP.X > Math.Max(p1.X, p2.X) + threshold ||
+                    mouseP.Y < Math.Min(p1.Y, p2.Y) - threshold ||
+                    mouseP.Y > Math.Max(p1.Y, p2.Y) + threshold)
+                {
+                    continue;
+                }
+
+                double length = Math.Sqrt(Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2));
+                if (length < 1) continue;
+
+                double distance = Math.Abs((mouseP.X - p1.X) * (p2.Y - p1.Y) -
+                                           (mouseP.Y - p1.Y) * (p2.X - p1.X)) / length;
+
+                if (distance <= threshold)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         private static void DrawBorder(Bitmap mainBmp, List<Peak> peaks)
         {
             using (Graphics g = Graphics.FromImage(mainBmp))
